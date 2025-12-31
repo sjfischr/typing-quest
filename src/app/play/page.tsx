@@ -14,12 +14,7 @@ import {
   clampInput,
   type TypingMetrics,
 } from "@/lib/typingEngine";
-import {
-  defaultStats,
-  loadStats,
-  recordSession,
-  type TypingStats,
-} from "@/lib/storage";
+import { loadStats, recordSession, type TypingStats } from "@/lib/storage";
 
 export default function PlayPage() {
   const [mode, setMode] = useState("focus");
@@ -30,17 +25,13 @@ export default function PlayPage() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [complete, setComplete] = useState(false);
   const [metrics, setMetrics] = useState<TypingMetrics | null>(null);
-  const [stats, setStats] = useState<TypingStats>(defaultStats);
+  const [stats, setStats] = useState<TypingStats>(() => loadStats());
 
   const activePack = useMemo(
     () => packs.find((pack) => pack.id === packId) ?? packs[0],
     [packId]
   );
   const target = activePack.texts[sampleIndex];
-
-  useEffect(() => {
-    setStats(loadStats());
-  }, []);
 
   useEffect(() => {
     if (!startedAt || complete) {

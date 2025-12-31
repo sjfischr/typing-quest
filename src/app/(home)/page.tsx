@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import GlassButton from "@/components/GlassButton";
 import GlassCard from "@/components/GlassCard";
 import Hero from "@/components/Hero";
 import PageShell from "@/components/PageShell";
 import StatsPreview from "@/components/StatsPreview";
-import { defaultStats, loadStats, type TypingStats } from "@/lib/storage";
+import { loadStats, type TypingStats } from "@/lib/storage";
 
 const focusCards = [
   {
@@ -24,11 +24,7 @@ const focusCards = [
 ];
 
 export default function HomePage() {
-  const [stats, setStats] = useState<TypingStats>(defaultStats);
-
-  useEffect(() => {
-    setStats(loadStats());
-  }, []);
+  const [initialStats] = useState<TypingStats>(() => loadStats());
 
   return (
     <PageShell>
@@ -46,9 +42,9 @@ export default function HomePage() {
               Jump back in with a fresh run or continue where you left off.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <GlassButton href="/play">Start Sprint</GlassButton>
-            {stats.sessions > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              <GlassButton href="/play">Start Sprint</GlassButton>
+            {initialStats.sessions > 0 ? (
               <GlassButton href="/play" variant="secondary">
                 Continue
               </GlassButton>

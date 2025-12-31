@@ -107,3 +107,39 @@
   background-size: 120px 120px;
   opacity: 0.25;
 }
+
+.learn-layout {
+  --learn-keyboard-scale: 1;
+}
+
+.learn-keyboard {
+  transform: scale(var(--learn-keyboard-scale));
+  transform-origin: top center;
+}
+
+@media (max-height: 820px) {
+  .learn-layout {
+    --learn-keyboard-scale: 0.88;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .learn-layout .learn-stack {
+    gap: 1rem;
+  }
+
+.learn-layout .learn-header,
+.learn-layout .learn-keyboard-card {
+    padding: 1rem;
+  }
+}
+
+.learn-layout .learn-header {
+  height: 240px;
+}
+
+@media (max-height: 820px) {
+  .learn-layout .learn-header {
+    height: 210px;
+  }
+}

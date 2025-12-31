@@ -13,13 +13,21 @@ const navItems = [
 
 type PageShellProps = {
   children: React.ReactNode;
+  className?: string;
+  mainClassName?: string;
 };
 
-export default function PageShell({ children }: PageShellProps) {
+export default function PageShell({
+  children,
+  className,
+  mainClassName,
+}: PageShellProps) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen px-6 pb-16 pt-8 sm:px-10">
+    <div
+      className={`min-h-screen px-6 pb-16 pt-8 sm:px-10 ${className ?? ""}`}
+    >
       <motion.header
         className="glass-panel mx-auto flex w-full max-w-6xl items-center justify-between rounded-2xl px-6 py-4"
         initial={{ opacity: 0, y: -12 }}
@@ -48,7 +56,9 @@ export default function PageShell({ children }: PageShellProps) {
           })}
         </nav>
       </motion.header>
-      <main className="mx-auto mt-10 w-full max-w-6xl">{children}</main>
+      <main className={`mx-auto mt-10 w-full max-w-6xl ${mainClassName ?? ""}`}>
+        {children}
+      </main>
     </div>
   );
 }

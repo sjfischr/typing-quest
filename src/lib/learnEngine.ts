@@ -14,6 +14,7 @@ export type LearnSessionTotals = {
   p50: number;
   p90: number;
   huntRate: number;
+  shiftedTargets: number;
 };
 
 export type LearnSession = {
@@ -36,6 +37,31 @@ export type FingerId =
   | "rightPinky";
 
 export const FINGER_MAP: Record<string, FingerId> = {
+  "`": "leftPinky",
+  "1": "leftPinky",
+  "!": "leftPinky",
+  "2": "leftRing",
+  "@": "leftRing",
+  "3": "leftMiddle",
+  "#": "leftMiddle",
+  "4": "leftIndex",
+  "$": "leftIndex",
+  "5": "leftIndex",
+  "%": "leftIndex",
+  "6": "rightIndex",
+  "^": "rightIndex",
+  "7": "rightIndex",
+  "&": "rightIndex",
+  "8": "rightMiddle",
+  "*": "rightMiddle",
+  "9": "rightRing",
+  "(": "rightRing",
+  "0": "rightPinky",
+  ")": "rightPinky",
+  "-": "rightPinky",
+  "_": "rightPinky",
+  "=": "rightPinky",
+  "+": "rightPinky",
   q: "leftPinky",
   a: "leftPinky",
   z: "leftPinky",
@@ -61,6 +87,22 @@ export const FINGER_MAP: Record<string, FingerId> = {
   k: "rightMiddle",
   o: "rightRing",
   l: "rightRing",
+  ",": "rightMiddle",
+  "<": "rightMiddle",
+  ".": "rightRing",
+  ">": "rightRing",
+  "/": "rightPinky",
+  "?": "rightPinky",
+  "[": "rightPinky",
+  "{": "rightPinky",
+  "]": "rightPinky",
+  "}": "rightPinky",
+  "\\": "rightPinky",
+  "|": "rightPinky",
+  ";": "rightPinky",
+  ":": "rightPinky",
+  "'": "rightPinky",
+  "\"": "rightPinky",
   p: "rightPinky",
 };
 
@@ -72,7 +114,76 @@ export const HOME_KEYS: Record<FingerId, string> = {
   rightIndex: "j",
   rightMiddle: "k",
   rightRing: "l",
-  rightPinky: "p",
+  rightPinky: ";",
+};
+
+export type FingerGuidance = {
+  fingerId: FingerId;
+  baseKey: string;
+  shiftKey?: "shift-left" | "shift-right";
+};
+
+const SHIFTED_SYMBOLS: Record<string, string> = {
+  "~": "`",
+  "!": "1",
+  "@": "2",
+  "#": "3",
+  "$": "4",
+  "%": "5",
+  "^": "6",
+  "&": "7",
+  "*": "8",
+  "(": "9",
+  ")": "0",
+  "_": "-",
+  "+": "=",
+  "{": "[",
+  "}": "]",
+  "|": "\\",
+  ":": ";",
+  "\"": "'",
+  "<": ",",
+  ">": ".",
+  "?": "/",
+};
+
+export type KeyMeta = {
+  baseKey: string;
+  shifted: boolean;
+  isLetter: boolean;
+};
+
+const LEFT_HAND: FingerId[] = [
+  "leftPinky",
+  "leftRing",
+  "leftMiddle",
+  "leftIndex",
+];
+
+export const getFingerGuidance = (key: string): FingerGuidance => {
+  const meta = getKeyMeta(key);
+  const fingerId = FINGER_MAP[meta.baseKey] ?? "leftIndex";
+  const requiresShift = meta.shifted;
+  const shiftKey = requiresShift
+    ? LEFT_HAND.includes(fingerId)
+      ? "shift-left"
+      : "shift-right"
+    : undefined;
+
+  return { fingerId, baseKey: meta.baseKey, shiftKey };
+};
+
+export const getKeyMeta = (key: string): KeyMeta => {
+  const normalized = key.length === 1 ? key : key.toLowerCase();
+  const isLetter = /^[a-zA-Z]$/.test(normalized);
+  if (isLetter) {
+    const baseKey = normalized.toLowerCase();
+    return { baseKey, shifted: normalized !== normalized.toLowerCase(), isLetter };
+  }
+
+  const baseKey = SHIFTED_SYMBOLS[normalized] ?? normalized;
+  const shifted = baseKey !== normalized;
+  return { baseKey, shifted, isLetter: false };
 };
 
 const HOME_ROW = ["a", "s", "d", "f", "j", "k", "l"];

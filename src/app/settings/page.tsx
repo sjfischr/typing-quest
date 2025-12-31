@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PageShell from "@/components/PageShell";
 import GlassCard from "@/components/GlassCard";
 import GlassButton from "@/components/GlassButton";
-import { defaultStats, loadStats, resetStats, type TypingStats } from "@/lib/storage";
+import { loadStats, resetStats, type TypingStats } from "@/lib/storage";
 
 export default function SettingsPage() {
-  const [stats, setStats] = useState<TypingStats>(defaultStats);
-
-  useEffect(() => {
-    setStats(loadStats());
-  }, []);
+  const [stats, setStats] = useState<TypingStats>(() => loadStats());
 
   const handleReset = () => {
     setStats(resetStats());

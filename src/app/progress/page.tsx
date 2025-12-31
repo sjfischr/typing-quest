@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PageShell from "@/components/PageShell";
 import GlassCard from "@/components/GlassCard";
 import StatPill from "@/components/StatPill";
-import {
-  defaultStats,
-  loadLearnSessions,
-  loadStats,
-  type TypingStats,
-} from "@/lib/storage";
+import { loadLearnSessions, loadStats, type TypingStats } from "@/lib/storage";
 import type { LearnSession } from "@/lib/learnEngine";
 
 const formatDate = (value: string | null) => {
@@ -21,13 +16,8 @@ const formatDate = (value: string | null) => {
 };
 
 export default function ProgressPage() {
-  const [stats, setStats] = useState<TypingStats>(defaultStats);
-  const [learnSessions, setLearnSessions] = useState<LearnSession[]>([]);
-
-  useEffect(() => {
-    setStats(loadStats());
-    setLearnSessions(loadLearnSessions());
-  }, []);
+  const [stats] = useState<TypingStats>(() => loadStats());
+  const [learnSessions] = useState<LearnSession[]>(() => loadLearnSessions());
 
   const bestLearnAccuracy = learnSessions.reduce((best, session) => {
     const total = session.totals.correctTargets + session.totals.wrongKeyPresses;

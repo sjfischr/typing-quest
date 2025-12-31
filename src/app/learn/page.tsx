@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import PageShell from "@/components/PageShell";
 import GlassCard from "@/components/GlassCard";
 import GlassSelect from "@/components/GlassSelect";
 import GlassButton from "@/components/GlassButton";
 import LearnKeyboard from "@/components/LearnKeyboard";
-import { FINGER_MAP, type LearnDifficulty } from "@/lib/learnEngine";
+import { getFingerGuidance, type LearnDifficulty } from "@/lib/learnEngine";
 import { useLearnEngine } from "@/hooks/useLearnEngine";
 
 const difficultyOptions = [
@@ -24,24 +25,34 @@ const formatTime = (ms: number) => {
 };
 
 const fingerHint = (key: string) => {
-  const finger = FINGER_MAP[key];
+  const guidance = getFingerGuidance(key);
+  const finger = guidance.fingerId;
+  const shiftHint = guidance.shiftKey
+    ? `Hold ${guidance.shiftKey === "shift-left" ? "left" : "right"} shift`
+    : null;
   switch (finger) {
     case "leftPinky":
-      return "Pinky finger (left)";
+      return shiftHint ? `${shiftHint} + pinky finger (left)` : "Pinky finger (left)";
     case "leftRing":
-      return "Ring finger (left)";
+      return shiftHint ? `${shiftHint} + ring finger (left)` : "Ring finger (left)";
     case "leftMiddle":
-      return "Middle finger (left)";
+      return shiftHint
+        ? `${shiftHint} + middle finger (left)`
+        : "Middle finger (left)";
     case "leftIndex":
-      return "Index finger (left)";
+      return shiftHint ? `${shiftHint} + index finger (left)` : "Index finger (left)";
     case "rightIndex":
-      return "Index finger (right)";
+      return shiftHint
+        ? `${shiftHint} + index finger (right)`
+        : "Index finger (right)";
     case "rightMiddle":
-      return "Middle finger (right)";
+      return shiftHint
+        ? `${shiftHint} + middle finger (right)`
+        : "Middle finger (right)";
     case "rightRing":
-      return "Ring finger (right)";
+      return shiftHint ? `${shiftHint} + ring finger (right)` : "Ring finger (right)";
     case "rightPinky":
-      return "Pinky finger (right)";
+      return shiftHint ? `${shiftHint} + pinky finger (right)` : "Pinky finger (right)";
     default:
       return "Home row focus";
   }
@@ -59,11 +70,19 @@ const segmentTone = (accuracy: number) => {
 
 export default function LearnPage() {
   const { state, actions } = useLearnEngine();
+  const [showFingerLabels, setShowFingerLabels] = useState(false);
+  const guidance = getFingerGuidance(state.target);
+  const pressedGuidance = state.lastPressedKey
+    ? getFingerGuidance(state.lastPressedKey)
+    : null;
 
   return (
-    <PageShell>
-      <div className="flex flex-col gap-8">
-        <GlassCard className="flex flex-col gap-6">
+    <PageShell
+      className="learn-layout h-[100dvh] overflow-hidden pt-4 pb-4 sm:pt-6 sm:pb-6"
+      mainClassName="mt-4 flex-1 min-h-0"
+    >
+      <div className="learn-stack flex h-full flex-col gap-6">
+        <GlassCard className="learn-header flex-none">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-widest text-white/60">
@@ -73,14 +92,22 @@ export default function LearnPage() {
                 Home row guided drill
               </h1>
             </div>
-            <GlassSelect
-              aria-label="Select difficulty"
-              value={state.difficulty}
-              onChange={(event) =>
-                actions.setDifficulty(event.target.value as LearnDifficulty)
-              }
-              options={difficultyOptions}
-            />
+            <div className="flex flex-wrap items-center gap-3">
+              <GlassButton
+                variant="ghost"
+                onClick={() => setShowFingerLabels((prev) => !prev)}
+              >
+                {showFingerLabels ? "Hide Labels" : "Show Labels"}
+              </GlassButton>
+              <GlassSelect
+                aria-label="Select difficulty"
+                value={state.difficulty}
+                onChange={(event) =>
+                  actions.setDifficulty(event.target.value as LearnDifficulty)
+                }
+                options={difficultyOptions}
+              />
+            </div>
           </div>
           <div className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
             <div className="glass-surface flex flex-col gap-4 rounded-2xl px-4 py-4">
@@ -144,18 +171,35 @@ export default function LearnPage() {
           </div>
         </GlassCard>
 
-        <GlassCard className="space-y-6">
+        <GlassCard className="learn-keyboard-card flex-1 min-h-0 overflow-hidden">
+          <div className="flex h-full flex-col gap-6">
+            <div className="flex-1 min-h-0 overflow-auto px-1">
           <LearnKeyboard
-            targetKey={state.target}
-            lastPressedKey={state.lastPressedKey}
+            targetKey={guidance.baseKey}
+            lastPressedKey={pressedGuidance?.baseKey ?? null}
             lastPressedCorrect={state.lastPressedCorrect}
+            activeFingerId={guidance.fingerId}
+            fingerTargetKey={guidance.baseKey}
+            shiftTargetKey={guidance.shiftKey}
+            showFingerLabels={showFingerLabels}
+            className="mx-auto"
           />
+            </div>
           <div className="flex flex-col items-center gap-2 text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-white/60">
               Target Key
             </p>
             <div className="text-6xl font-semibold text-white">{state.target}</div>
+            {guidance.shiftKey ? (
+              <p className="text-xs uppercase tracking-widest text-cyan-100/80">
+                Shift +{" "}
+                {guidance.baseKey.length === 1
+                  ? guidance.baseKey.toUpperCase()
+                  : guidance.baseKey}
+              </p>
+            ) : null}
             <p className="text-sm text-white/70">{fingerHint(state.target)}</p>
+          </div>
           </div>
         </GlassCard>
       </div>

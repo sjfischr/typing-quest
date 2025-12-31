@@ -5,6 +5,7 @@ import {
   buildSegments,
   computePercentile,
   getNextTarget,
+  getKeyMeta,
   type LearnDifficulty,
   type LearnSegment,
   type LearnSession,
@@ -15,6 +16,8 @@ const SESSION_DURATION_MS = 120000;
 const SEGMENT_DURATION_MS = 15000;
 const SEGMENT_COUNT = 8;
 const HUNT_THRESHOLD_MS = 900;
+const SUPPORTED_KEY_PATTERN =
+  /^[a-zA-Z0-9`~!@#$%^&*()\-_=+\[\]{}\\|;:'",.<>\/]$/;
 
 type LearnTotalsSnapshot = {
   correctTargets: number;
@@ -23,6 +26,7 @@ type LearnTotalsSnapshot = {
   p50: number;
   p90: number;
   huntRate: number;
+  shiftedTargets: number;
 };
 
 type LearnEngineState = {
@@ -61,12 +65,9 @@ const buildTotalsSnapshot = (
   correctTargets: number,
   wrongKeyPresses: number,
   reactions: number[],
-  huntEvents: number
+  huntEvents: number,
+  shiftedTargets: number
 ): LearnTotalsSnapshot => {
-  const accuracy =
-    correctTargets + wrongKeyPresses === 0
-      ? 100
-      : Math.round((correctTargets / (correctTargets + wrongKeyPresses)) * 100);
   const avgReactionMs =
     reactions.length === 0
       ? 0
@@ -85,12 +86,14 @@ const buildTotalsSnapshot = (
     p50,
     p90,
     huntRate,
+    shiftedTargets,
   };
 };
 
 export const useLearnEngine = () => {
+  const initialTarget = getNextTarget("beginner", []);
   const [difficulty, setDifficulty] = useState<LearnDifficulty>("beginner");
-  const [target, setTarget] = useState("a");
+  const [target, setTarget] = useState(initialTarget.letter);
   const [status, setStatus] = useState<LearnEngineState["status"]>("idle");
   const [timeLeftMs, setTimeLeftMs] = useState(SESSION_DURATION_MS);
   const [segments, setSegments] = useState<LearnSegment[]>(
@@ -104,16 +107,18 @@ export const useLearnEngine = () => {
     p50: 0,
     p90: 0,
     huntRate: 0,
+    shiftedTargets: 0,
   });
   const [lastPressedKey, setLastPressedKey] = useState<string | null>(null);
   const [lastPressedCorrect, setLastPressedCorrect] = useState<boolean | null>(null);
 
-  const queueRef = useRef<string[]>([]);
+  const queueRef = useRef<string[]>(initialTarget.queue);
   const startTimeRef = useRef<number | null>(null);
-  const targetShownAtRef = useRef<number>(Date.now());
+  const targetShownAtRef = useRef<number>(0);
   const mistakesRef = useRef(0);
   const reactionsRef = useRef<number[]>([]);
   const huntEventsRef = useRef(0);
+  const shiftedTargetsRef = useRef(0);
   const correctTargetsRef = useRef(0);
   const wrongKeyPressesRef = useRef(0);
   const segmentAccumulatorsRef = useRef<SegmentAccumulator[]>(
@@ -129,6 +134,7 @@ export const useLearnEngine = () => {
       mistakesRef.current = 0;
       reactionsRef.current = [];
       huntEventsRef.current = 0;
+      shiftedTargetsRef.current = 0;
       correctTargetsRef.current = 0;
       wrongKeyPressesRef.current = 0;
       segmentAccumulatorsRef.current = createSegmentAccumulators();
@@ -144,6 +150,7 @@ export const useLearnEngine = () => {
         p50: 0,
         p90: 0,
         huntRate: 0,
+        shiftedTargets: 0,
       });
       setLastPressedKey(null);
       setLastPressedCorrect(null);
@@ -152,15 +159,16 @@ export const useLearnEngine = () => {
   );
 
   useEffect(() => {
-    resetSession(difficulty);
-  }, [difficulty, resetSession]);
+    targetShownAtRef.current = Date.now();
+  }, []);
 
   const updateSnapshots = useCallback(() => {
     const totalsSnapshot = buildTotalsSnapshot(
       correctTargetsRef.current,
       wrongKeyPressesRef.current,
       reactionsRef.current,
-      huntEventsRef.current
+      huntEventsRef.current,
+      shiftedTargetsRef.current
     );
     setTotals(totalsSnapshot);
 
@@ -189,7 +197,8 @@ export const useLearnEngine = () => {
       correctTargetsRef.current,
       wrongKeyPressesRef.current,
       reactionsRef.current,
-      huntEventsRef.current
+      huntEventsRef.current,
+      shiftedTargetsRef.current
     );
     const finalSegments = segmentAccumulatorsRef.current.map((segment, index) => {
       const targetsCompleted = segment.targets;
@@ -209,14 +218,14 @@ export const useLearnEngine = () => {
       };
     });
 
-    const session: LearnSession = {
-      mode: "learn",
-      createdAt: new Date().toISOString(),
-      durationSec: 120,
-      difficulty,
-      totals: totalsSnapshot,
-      segments: finalSegments,
-    };
+      const session: LearnSession = {
+        mode: "learn",
+        createdAt: new Date().toISOString(),
+        durationSec: 120,
+        difficulty,
+        totals: totalsSnapshot,
+        segments: finalSegments,
+      };
     recordLearnSession(session);
     setTotals(totalsSnapshot);
     setSegments(finalSegments);
@@ -255,12 +264,17 @@ export const useLearnEngine = () => {
         return;
       }
 
-      const key = event.key.toLowerCase();
-      if (!/^[a-z]$/.test(key)) {
+      const rawKey = event.key;
+      if (!SUPPORTED_KEY_PATTERN.test(rawKey)) {
         return;
       }
 
       event.preventDefault();
+
+      const keyMeta = getKeyMeta(rawKey);
+      const targetMeta = getKeyMeta(target);
+      const expectedLetter = targetMeta.baseKey;
+      const inputLetter = keyMeta.baseKey;
 
       const now = Date.now();
       if (!startTimeRef.current) {
@@ -274,11 +288,15 @@ export const useLearnEngine = () => {
         Math.floor(elapsed / SEGMENT_DURATION_MS)
       );
 
-      if (key !== target) {
+      const isCorrect = targetMeta.isLetter
+        ? inputLetter === expectedLetter
+        : inputLetter === expectedLetter && keyMeta.shifted === targetMeta.shifted;
+
+      if (!isCorrect) {
         wrongKeyPressesRef.current += 1;
         mistakesRef.current += 1;
         segmentAccumulatorsRef.current[segmentIndex].wrong += 1;
-        setLastPressedKey(key);
+        setLastPressedKey(inputLetter);
         setLastPressedCorrect(false);
         updateSnapshots();
         window.setTimeout(() => {
@@ -297,9 +315,12 @@ export const useLearnEngine = () => {
       if (reaction > HUNT_THRESHOLD_MS) {
         huntEventsRef.current += 1;
       }
+      if (targetMeta.shifted) {
+        shiftedTargetsRef.current += 1;
+      }
 
       mistakesRef.current = 0;
-      setLastPressedKey(key);
+      setLastPressedKey(inputLetter);
       setLastPressedCorrect(true);
 
       const { letter, queue } = getNextTarget(difficulty, queueRef.current);
@@ -317,6 +338,14 @@ export const useLearnEngine = () => {
     window.addEventListener("keydown", handleKeydown);
     return () => window.removeEventListener("keydown", handleKeydown);
   }, [difficulty, status, target, updateSnapshots]);
+
+  const setDifficultyAndReset = useCallback(
+    (nextDifficulty: LearnDifficulty) => {
+      setDifficulty(nextDifficulty);
+      resetSession(nextDifficulty);
+    },
+    [resetSession]
+  );
 
   const accuracy = totals.correctTargets + totals.wrongKeyPresses === 0
     ? 100
@@ -345,7 +374,7 @@ export const useLearnEngine = () => {
         totals,
       },
       actions: {
-        setDifficulty,
+        setDifficulty: setDifficultyAndReset,
         resetSession,
       },
     }),
@@ -357,7 +386,7 @@ export const useLearnEngine = () => {
       lastPressedKey,
       resetSession,
       segments,
-      setDifficulty,
+      setDifficultyAndReset,
       status,
       target,
       timeLeftMs,
