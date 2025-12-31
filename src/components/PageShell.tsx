@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
 const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/play", label: "Play" },
+  { href: "/play", label: "Sprint" },
+  { href: "/learn", label: "Learn" },
   { href: "/progress", label: "Progress" },
   { href: "/settings", label: "Settings" },
 ];
@@ -29,14 +29,14 @@ export default function PageShell({ children }: PageShellProps) {
         <Link href="/" className="flex items-center gap-3">
           <span className="glass-chip">Typing Quest</span>
         </Link>
-        <nav className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest">
+        <nav className="glass-surface flex items-center gap-2 rounded-2xl p-1 text-xs font-semibold uppercase tracking-widest">
           {navItems.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-full px-4 py-2 transition ${
+                className={`rounded-2xl px-4 py-2 transition ${
                   active
                     ? "bg-white/15 text-white shadow-glow"
                     : "text-white/70 hover:text-white"

@@ -1,4 +1,5 @@
 import type { TypingMetrics } from "./typingEngine";
+import type { LearnSession } from "./learnEngine";
 
 export type TypingStats = {
   sessions: number;
@@ -10,6 +11,7 @@ export type TypingStats = {
 };
 
 const STORAGE_KEY = "typing-quest-stats";
+const LEARN_STORAGE_KEY = "typing-quest-learn-sessions";
 
 export const defaultStats: TypingStats = {
   sessions: 0,
@@ -72,4 +74,36 @@ export const recordSession = (metrics: TypingMetrics): TypingStats => {
 export const resetStats = (): TypingStats => {
   saveStats(defaultStats);
   return defaultStats;
+};
+
+export const loadLearnSessions = (): LearnSession[] => {
+  if (!isBrowser()) {
+    return [];
+  }
+
+  const raw = window.localStorage.getItem(LEARN_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as LearnSession[]) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveLearnSessions = (sessions: LearnSession[]) => {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(LEARN_STORAGE_KEY, JSON.stringify(sessions));
+};
+
+export const recordLearnSession = (session: LearnSession) => {
+  const sessions = loadLearnSessions();
+  const next = [session, ...sessions].slice(0, 200);
+  saveLearnSessions(next);
+  return next;
 };

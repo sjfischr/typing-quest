@@ -29,6 +29,7 @@ export default function Hero() {
         </p>
         <div className="flex flex-wrap gap-4">
           <GlassButton href="/play" label="Start a Run" />
+          <GlassButton href="/learn" label="Learn the Keys" variant="secondary" />
           <GlassButton href="/progress" label="View Progress" variant="ghost" />
         </div>
       </motion.div>
