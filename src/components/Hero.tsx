@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import ActionLink from "./ActionLink";
+import GlassButton from "./GlassButton";
 
 export default function Hero() {
   return (
@@ -28,12 +28,12 @@ export default function Hero() {
           Build speed, stay accurate, and watch your progress shimmer.
         </p>
         <div className="flex flex-wrap gap-4">
-          <ActionLink href="/play" label="Start a Run" />
-          <ActionLink href="/progress" label="View Progress" variant="ghost" />
+          <GlassButton href="/play" label="Start a Run" />
+          <GlassButton href="/progress" label="View Progress" variant="ghost" />
         </div>
       </motion.div>
       <motion.div
-        className="glass-panel flex flex-col gap-6 rounded-3xl p-6"
+        className="glass-panel flex flex-col gap-6 rounded-2xl p-6"
         variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0 } }}
       >
         <div>

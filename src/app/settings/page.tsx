@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import PageShell from "@/components/PageShell";
 import GlassCard from "@/components/GlassCard";
+import GlassButton from "@/components/GlassButton";
 import { defaultStats, loadStats, resetStats, type TypingStats } from "@/lib/storage";
 
 export default function SettingsPage() {
@@ -42,12 +43,9 @@ export default function SettingsPage() {
                 Clears all stored sessions and performance metrics.
               </p>
             </div>
-            <button
-              onClick={handleReset}
-              className="rounded-full border border-white/15 px-5 py-2 text-sm font-semibold uppercase tracking-widest text-white/80 transition hover:border-white/40 hover:text-white"
-            >
+            <GlassButton onClick={handleReset} variant="ghost">
               Clear Progress
-            </button>
+            </GlassButton>
           </div>
           <p className="text-xs text-white/50">
             Current sessions tracked: {stats.sessions}

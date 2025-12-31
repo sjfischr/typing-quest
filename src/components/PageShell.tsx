@@ -21,7 +21,7 @@ export default function PageShell({ children }: PageShellProps) {
   return (
     <div className="min-h-screen px-6 pb-16 pt-8 sm:px-10">
       <motion.header
-        className="glass-panel mx-auto flex w-full max-w-6xl items-center justify-between rounded-3xl px-6 py-4"
+        className="glass-panel mx-auto flex w-full max-w-6xl items-center justify-between rounded-2xl px-6 py-4"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}

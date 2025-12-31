@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import PageShell from "@/components/PageShell";
 import GlassCard from "@/components/GlassCard";
 import TypingPrompt from "@/components/TypingPrompt";
+import GlassButton from "@/components/GlassButton";
+import GlassSelect from "@/components/GlassSelect";
+import GlassTabs from "@/components/GlassTabs";
 import { packs } from "@/content/packs";
 import {
   calculateMetrics,
@@ -19,6 +22,7 @@ import {
 } from "@/lib/storage";
 
 export default function PlayPage() {
+  const [mode, setMode] = useState("focus");
   const [packId, setPackId] = useState(packs[0]?.id ?? "");
   const [sampleIndex, setSampleIndex] = useState(0);
   const [input, setInput] = useState("");
@@ -109,22 +113,28 @@ export default function PlayPage() {
                 </h1>
                 <p className="text-sm text-white/60">{activePack.description}</p>
               </div>
-              <select
+              <GlassSelect
                 value={packId}
                 onChange={(event) => {
                   setPackId(event.target.value);
                   setSampleIndex(0);
                   resetRun();
                 }}
-                className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-200/40"
-              >
-                {packs.map((pack) => (
-                  <option key={pack.id} value={pack.id} className="text-black">
-                    {pack.title}
-                  </option>
-                ))}
-              </select>
+                aria-label="Select typing pack"
+                options={packs.map((pack) => ({
+                  value: pack.id,
+                  label: pack.title,
+                }))}
+              />
             </div>
+            <GlassTabs
+              value={mode}
+              onChange={setMode}
+              items={[
+                { id: "focus", label: "Focus" },
+                { id: "sprint", label: "Sprint" },
+              ]}
+            />
             <TypingPrompt target={target} input={input} />
             <div className="flex flex-wrap items-center gap-3">
               <textarea
@@ -151,18 +161,12 @@ export default function PlayPage() {
             </div>
           </GlassCard>
           <div className="flex flex-wrap gap-3">
-            <button
-              onClick={resetRun}
-              className="rounded-full border border-white/15 px-5 py-2 text-sm font-semibold uppercase tracking-widest text-white/80 transition hover:border-white/40 hover:text-white"
-            >
+            <GlassButton onClick={resetRun} variant="ghost">
               Reset Run
-            </button>
-            <button
-              onClick={nextSample}
-              className="rounded-full border border-white/15 px-5 py-2 text-sm font-semibold uppercase tracking-widest text-white/80 transition hover:border-white/40 hover:text-white"
-            >
+            </GlassButton>
+            <GlassButton onClick={nextSample} variant="secondary">
               Next Sample
-            </button>
+            </GlassButton>
           </div>
         </motion.div>
         <div className="flex flex-col gap-6">
