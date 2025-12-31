@@ -129,14 +129,36 @@ const buildKeyLayout = () => {
 
 const KEYBOARD_LAYOUT = buildKeyLayout();
 
-const HOME_KEY_POSITION = Object.fromEntries(
-  Object.entries(HOME_KEYS).map(([fingerId, keyLabel]) => {
-    const key = KEYBOARD_LAYOUT.rows
-      .flatMap((row) => row.keys)
-      .find((item) => item.code === keyLabel);
-    return [fingerId, key];
-  })
-) as Record<FingerId, { x: number; y: number; width: number; height: number }>;
+type KeyRect = { x: number; y: number; width: number; height: number };
+
+const getKeyOrFallback = (code: string): KeyRect => {
+  const key = KEYBOARD_LAYOUT.rows
+    .flatMap((row) => row.keys)
+    .find((item) => item.code === code);
+  if (!key) {
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
+  return { x: key.x, y: key.y, width: key.width, height: key.height };
+};
+
+const FINGER_IDS: FingerId[] = [
+  "leftPinky",
+  "leftRing",
+  "leftMiddle",
+  "leftIndex",
+  "rightIndex",
+  "rightMiddle",
+  "rightRing",
+  "rightPinky",
+];
+
+const HOME_KEY_POSITION = FINGER_IDS.reduce<Record<FingerId, KeyRect>>(
+  (acc, fingerId) => {
+    acc[fingerId] = getKeyOrFallback(HOME_KEYS[fingerId]);
+    return acc;
+  },
+  {} as Record<FingerId, KeyRect>
+);
 
 const FINGER_LABELS: Record<FingerId, string> = {
   leftPinky: "L P",
@@ -230,7 +252,8 @@ export default function LearnKeyboard({
         })
       )}
 
-      {Object.entries(HOME_KEY_POSITION).map(([fingerId, homeKey]) => {
+      {FINGER_IDS.map((fingerId) => {
+        const homeKey = HOME_KEY_POSITION[fingerId];
         const isActive = fingerId === activeFingerId;
         const destinationKey =
           isActive && fingerTargetKey ? getKeyByCode(fingerTargetKey) : homeKey;
