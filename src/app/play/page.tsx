@@ -69,16 +69,17 @@ export default function PlayPage() {
     }
 
     const nextValue = clampInput(value, target);
+    const startTime = startedAt ?? Date.now();
     if (!startedAt && nextValue.length > 0) {
-      setStartedAt(Date.now());
+      setStartedAt(startTime);
     }
     setInput(nextValue);
 
-    const now = startedAt ? Date.now() - startedAt : elapsedMs;
-    if (startedAt) {
-      setElapsedMs(now);
+    const duration = Date.now() - startTime;
+    if (startedAt || nextValue.length > 0) {
+      setElapsedMs(duration);
     }
-    const nextMetrics = calculateMetrics(target, nextValue, now);
+    const nextMetrics = calculateMetrics(target, nextValue, duration);
     setMetrics(nextMetrics);
 
     if (nextValue === target) {
@@ -130,6 +131,10 @@ export default function PlayPage() {
                 value={input}
                 onChange={(event) => handleInput(event.target.value)}
                 placeholder="Start typing here..."
+                autoFocus
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 className="min-h-[110px] w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white/90 outline-none transition focus:border-cyan-200/40 focus:ring-2 focus:ring-cyan-200/20"
               />
               <div className="flex w-full items-center justify-between gap-4 text-sm text-white/70">
