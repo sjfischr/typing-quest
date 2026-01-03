@@ -1,5 +1,6 @@
 import type { TypingMetrics } from "./typingEngine";
 import type { LearnSession } from "./learnEngine";
+import type { RescueDifficulty } from "./rescueEngine";
 
 export type TypingStats = {
   sessions: number;
@@ -12,6 +13,7 @@ export type TypingStats = {
 
 const STORAGE_KEY = "typing-quest-stats";
 const LEARN_STORAGE_KEY = "typing-quest-learn-sessions";
+const RESCUE_STORAGE_KEY = "typing-quest-rescue-sessions";
 
 export const defaultStats: TypingStats = {
   sessions: 0,
@@ -105,5 +107,51 @@ export const recordLearnSession = (session: LearnSession) => {
   const sessions = loadLearnSessions();
   const next = [session, ...sessions].slice(0, 200);
   saveLearnSessions(next);
+  return next;
+};
+
+export type RescueSession = {
+  mode: "rescue";
+  createdAt: string;
+  difficulty: RescueDifficulty;
+  status: "won" | "lost";
+  wordsCompleted: number;
+  wordGoal: number;
+  durationMs: number;
+  meterPeak: number;
+  meterMax: number;
+  wpm: number;
+  accuracy: number;
+};
+
+export const loadRescueSessions = (): RescueSession[] => {
+  if (!isBrowser()) {
+    return [];
+  }
+
+  const raw = window.localStorage.getItem(RESCUE_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as RescueSession[]) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveRescueSessions = (sessions: RescueSession[]) => {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(RESCUE_STORAGE_KEY, JSON.stringify(sessions));
+};
+
+export const recordRescueSession = (session: RescueSession) => {
+  const sessions = loadRescueSessions();
+  const next = [session, ...sessions].slice(0, 200);
+  saveRescueSessions(next);
   return next;
 };

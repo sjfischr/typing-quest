@@ -42,10 +42,13 @@ export default function HomePage() {
               Jump back in with a fresh run or continue where you left off.
             </p>
           </div>
-            <div className="flex flex-wrap gap-3">
-              <GlassButton href="/play">Start Sprint</GlassButton>
+          <div className="flex flex-wrap gap-3">
+            <GlassButton href="/play">Start Sprint</GlassButton>
+            <GlassButton href="/play/rescue" variant="secondary">
+              Try Rescue
+            </GlassButton>
             {initialStats.sessions > 0 ? (
-              <GlassButton href="/play" variant="secondary">
+              <GlassButton href="/play" variant="ghost">
                 Continue
               </GlassButton>
             ) : null}

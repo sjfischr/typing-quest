@@ -1,14 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 type GlassTabsItem = {
   id: string;
   label: string;
+  href?: string;
 };
 
 type GlassTabsProps = {
   items: GlassTabsItem[];
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   className?: string;
 };
 
@@ -18,6 +21,18 @@ export default function GlassTabs({
   onChange,
   className,
 }: GlassTabsProps) {
+  const router = useRouter();
+
+  const handleClick = (item: GlassTabsItem) => {
+    if (item.href) {
+      router.push(item.href);
+      return;
+    }
+    if (onChange) {
+      onChange(item.id);
+    }
+  };
+
   return (
     <div
       role="tablist"
@@ -29,7 +44,7 @@ export default function GlassTabs({
         return (
           <button
             key={item.id}
-            onClick={() => onChange(item.id)}
+            onClick={() => handleClick(item)}
             role="tab"
             aria-selected={active}
             className={`rounded-2xl px-4 py-2 text-xs font-semibold uppercase tracking-widest transition ${

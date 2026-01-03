@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import PageShell from "@/components/PageShell";
 import GlassCard from "@/components/GlassCard";
 import TypingPrompt from "@/components/TypingPrompt";
@@ -17,6 +18,7 @@ import {
 import { loadStats, recordSession, type TypingStats } from "@/lib/storage";
 
 export default function PlayPage() {
+  const router = useRouter();
   const [mode, setMode] = useState("focus");
   const [packId, setPackId] = useState(packs[0]?.id ?? "");
   const [sampleIndex, setSampleIndex] = useState(0);
@@ -87,6 +89,12 @@ export default function PlayPage() {
   return (
     <PageShell>
       <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="flex justify-between gap-4">
+          <div className="text-sm uppercase tracking-widest text-cyan-100/80">Play</div>
+          <GlassButton href="/play/rescue" variant="ghost" className="text-xs uppercase tracking-widest">
+            New: Rescue Mode
+          </GlassButton>
+        </div>
         <motion.div
           className="flex flex-col gap-6"
           initial={{ opacity: 0, y: 16 }}
@@ -104,26 +112,42 @@ export default function PlayPage() {
                 </h1>
                 <p className="text-sm text-white/60">{activePack.description}</p>
               </div>
-              <GlassSelect
-                value={packId}
-                onChange={(event) => {
-                  setPackId(event.target.value);
-                  setSampleIndex(0);
-                  resetRun();
-                }}
-                aria-label="Select typing pack"
-                options={packs.map((pack) => ({
-                  value: pack.id,
-                  label: pack.title,
-                }))}
-              />
+              <div className="flex flex-wrap items-center gap-3">
+                <GlassSelect
+                  value={packId}
+                  onChange={(event) => {
+                    setPackId(event.target.value);
+                    setSampleIndex(0);
+                    resetRun();
+                  }}
+                  aria-label="Select typing pack"
+                  options={packs.map((pack) => ({
+                    value: pack.id,
+                    label: pack.title,
+                  }))}
+                />
+                <GlassButton
+                  href="/play/rescue"
+                  variant="secondary"
+                  className="whitespace-nowrap"
+                >
+                  Try Rescue
+                </GlassButton>
+              </div>
             </div>
             <GlassTabs
               value={mode}
-              onChange={setMode}
+              onChange={(next) => {
+                if (next === "rescue") {
+                  router.push("/play/rescue");
+                  return;
+                }
+                setMode(next);
+              }}
               items={[
                 { id: "focus", label: "Focus" },
                 { id: "sprint", label: "Sprint" },
+                { id: "rescue", label: "Rescue", href: "/play/rescue" },
               ]}
             />
             <TypingPrompt target={target} input={input} />
