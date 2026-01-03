@@ -56,9 +56,9 @@ export default function RescueStage({
             animate={{
               scale: meterPercent > 85 ? 1.05 : 1,
               y: meterPercent > 85 ? -3 : 0,
-              x: shouldShake ? [0, -5, 5, -4, 4, 0] : 0,
+              x: shouldShake ? [0, -2.5, 2.5, -2, 2, 0] : 0,
             }}
-            transition={{ type: "spring", stiffness: 260, damping: 18, duration: shouldShake ? 0.4 : 0.25 }}
+            transition={{ type: "spring", stiffness: 260, damping: 22, duration: shouldShake ? 0.25 : 0.22 }}
           >
             <div className="absolute inset-x-6 bottom-2 h-1 rounded-full bg-white/30" />
             <div className="absolute inset-0 rounded-3xl border border-white/20" />

@@ -21,9 +21,9 @@ export const RESCUE_CONFIG: Record<RescueDifficulty, RescueConfig> = {
     durationMs: 120_000,
   },
   medium: {
-    passiveFillPerSecond: 1.6,
-    typoSpike: 13,
-    healOnComplete: 15,
+    passiveFillPerSecond: 1.35,
+    typoSpike: 11,
+    healOnComplete: 16,
     meterMax: 100,
     wordGoal: 20,
     durationMs: 120_000,

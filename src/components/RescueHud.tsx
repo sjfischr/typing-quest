@@ -27,6 +27,7 @@ export default function RescueHud({
 }: RescueHudProps) {
   const meterPercent = Math.min(100, Math.max(0, Math.round((meterValue / meterMax) * 100)));
   const streakText = streakBonus && streakBonus > 0 ? `+${streakBonus} heal on next word` : "Chain 3+ clean words to earn heal";
+  const meterDisplay = Math.round(meterValue);
 
   return (
     <GlassCard className="space-y-4">
@@ -61,7 +62,7 @@ export default function RescueHud({
         <div className="glass-surface rounded-2xl px-3 py-2">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-white/60">Meter</p>
           <p className="text-lg font-semibold text-white">
-            {meterValue} / {meterMax}
+            {meterDisplay} / {meterMax}
           </p>
         </div>
         <div className="glass-surface rounded-2xl px-3 py-2">
